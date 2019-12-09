@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jreverett/SOFT355-PictionaryWebApp#readme",
   "dependencies": {
+    "chai": "^4.2.0",
     "mocha": "^6.2.2"
   }
 }
