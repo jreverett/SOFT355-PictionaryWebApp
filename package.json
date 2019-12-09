@@ -4,7 +4,7 @@
   "description": "SOFT355 Coursework",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
