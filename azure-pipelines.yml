@@ -1,0 +1,41 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# npm setup
+- script: npm install
+  displayName: npm install
+- script: npm install mocha
+  displayName: npm install mocha
+- script: npm install mocha-junit-reporter
+  displayName: npm install mocha-junit-reporter
+
+# testing
+- script: npm test
+  displayName: npm test
+
+# publish test results
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/TEST-*.xml'
+    failTaskOnFailedTests: true
+
+# export files
+- task: ArchiveFiles@2
+  displayName: archive files
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+- task: PublishBuildArtifacts@1
+  displayName: publish build artifacts
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
