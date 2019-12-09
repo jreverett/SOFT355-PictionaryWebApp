@@ -18,6 +18,8 @@
   "homepage": "https://github.com/jreverett/SOFT355-PictionaryWebApp#readme",
   "dependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.2.2"
+    "express": "^4.17.1",
+    "mocha": "^6.2.2",
+    "mongoose": "^5.7.14"
   }
 }
