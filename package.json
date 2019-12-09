@@ -1,0 +1,22 @@
+{
+  "name": "soft355-pictionarywebapp",
+  "version": "1.0.0",
+  "description": "SOFT355 Coursework",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jreverett/SOFT355-PictionaryWebApp.git"
+  },
+  "author": "Jamie Everett",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jreverett/SOFT355-PictionaryWebApp/issues"
+  },
+  "homepage": "https://github.com/jreverett/SOFT355-PictionaryWebApp#readme",
+  "dependencies": {
+    "mocha": "^6.2.2"
+  }
+}
