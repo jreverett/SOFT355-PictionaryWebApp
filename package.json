@@ -4,7 +4,7 @@
   "description": "SOFT355 Coursework",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 10000 --reporter mocha-junit-reporter --reporter-options mochaFile=./test/test-result.xml"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
     "eslint": "^6.7.2",
     "express": "^4.17.1",
     "mocha": "^6.2.2",
+    "mocha-junit-reporter": "^1.23.1",
     "mongoose": "^5.7.14"
   }
 }
