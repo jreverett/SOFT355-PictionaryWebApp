@@ -18,8 +18,12 @@ dbConn.once("open", function() {
   console.log("connection established with MongoDB");
 });
 
-// REST api routing
-app.get("/", (req, res) => res.send("Hello World!"));
+// REST api routing ////////////////////////////////////
+const user = require("./route/user/index");
+
+app.use("/api/user", user);
+//app.use("/", routes);
+////////////////////////////////////////////////////////
 
 // app.listen
 app.listen(port, () => {
