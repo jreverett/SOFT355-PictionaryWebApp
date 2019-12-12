@@ -1,15 +1,17 @@
 var express = require("express");
 var mongoose = require("mongoose");
+mongoose.set("useCreateIndex", true);
+
+require("dotenv").config();
 
 // server settings
 const app = express();
-const port = 9000;
+const port = process.env.PORT;
 app.use(express.json());
 
 // setup connection string
 var dbConn = mongoose.connection;
-const mongoString =
-  "mongodb+srv://TestUser:Password1!@soft355-pictionary-gx8rh.azure.mongodb.net/test?retryWrites=true&w=majority";
+const mongoString = process.env.MONGODB_URL;
 
 // setup listeners
 dbConn.on("error", console.error.bind(console, "connection error: "));
@@ -22,7 +24,10 @@ dbConn.once("open", function() {
 const user = require("./route/user/index");
 
 app.use("/api/user", user);
-//app.use("/", routes);
+
+// homepage
+app.use(express.static("public"));
+
 ////////////////////////////////////////////////////////
 
 // app.listen
