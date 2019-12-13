@@ -36,6 +36,13 @@ body {
   height: 85%;
 }
 
+#canvas {
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgb(255, 255, 255);
+  cursor: crosshair;
+}
+
 /* Taskbar (palette & buttons) */
 #taskbarContainer {
   display: flex;
@@ -72,8 +79,13 @@ body {
   background: rgba(255, 192, 203, 0.9);
 }
 
+#eraser.selected {
+  box-shadow: 0 2px 4px 0 black;
+  background: rgba(184, 131, 140, 0.808);
+}
+
 #clear {
-  background: rgba(255, 230, 0, 0.6);
+  background: rgba(255, 231, 18, 0.8);
 }
 
 #clear:hover {
