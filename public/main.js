@@ -1,32 +1,84 @@
-$(function() {
+$(function () {
+  // Data structures ///////////
+  const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
+
+  //////////////////////////////
+  // Setup functions
   resizeCanvas();
 
-  $("#eraser").click(function() {
-    $(this).toggleClass("selected");
-  });
-
-  $(window).resize(function() {
+  //////////////////////////////
+  // Event listeners ///////////
+  $(window).resize(function () {
     resizeCanvas();
   });
 
-  // canvas drawing
+  //////////////////////////////
+  // Canvas functions //////////
+  var canvasActive = false; // painting or erasing
+  var mode = BrushMode.PAINT;
   var canvas = document.getElementById("canvas");
   var context = canvas.getContext("2d");
+  var container = $("#canvasContainer");
+  var mouse = { x: 0, y: 0 };
 
-  context.lineWidth = 20;
-  context.strokeStyle = "#42e565";
+  // default line styling
+  context.lineWidth = 3;
+  context.strokeStyle = "#000000";
   context.lineCap = "round";
   context.lineJoin = "round";
 
-  // draw a line
-  context.beginPath();
-  // move to the context point
-  context.moveTo(100, 100);
-  // draw line from start point to end point
-  context.lineTo(600, 500);
-  context.lineTo(700, 200);
-  // render line
-  context.stroke();
+  container.mousedown(function (e) {
+    canvasActive = true;
+
+    // get mouse pos
+    mouse.x = e.pageX - this.offsetLeft;
+    mouse.y = e.pageY - this.offsetTop;
+
+    context.beginPath();
+    context.moveTo(mouse.x, mouse.y);
+  });
+
+  container.mousemove(function (e) {
+    // get mouse pos
+    mouse.x = e.pageX - this.offsetLeft;
+    mouse.y = e.pageY - this.offsetTop;
+
+    if (canvasActive == true) {
+      if (mode == BrushMode.PAINT)
+        // TODO: get line colour
+        context.strokeStyle = "red";
+      else if (mode == BrushMode.ERASE)
+        // white (to erase)
+        context.strokeStyle = "white";
+
+      context.lineTo(mouse.x, mouse.y);
+      context.stroke();
+    }
+  });
+
+  container.mouseup(function () {
+    canvasActive = false;
+  });
+
+  container.mouseleave(function () {
+    canvasActive = false;
+  });
+
+  $("#eraser").click(function () {
+    $(this).toggleClass("selected");
+
+    if (mode == BrushMode.PAINT)
+      mode = BrushMode.ERASE;
+    else
+      mode = BrushMode.PAINT;
+  });
+
+  $("#clear").click(function () {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    mode = BrushMode.PAINT;
+    $("#eraser").removeClass("selected");
+  });
+  //////////////////////////////
 });
 
 function resizeCanvas() {
