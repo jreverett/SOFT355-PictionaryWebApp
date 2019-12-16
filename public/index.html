@@ -1,41 +1,67 @@
 <!DOCTYPE html>
-<html></html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Pictionary</title>
-        <link rel="stylesheet" type="text/css" href="main.css">
-    </head>
-    <body>
-        <div id="gameContainer">
-            <div id="first-column">
-                <!-- canvas -->
-                <div id="canvasContainer" class="container">
-                    <canvas id="canvas"></canvas>
-                </div>
-                <div id="taskbarContainer">
-                    <!-- palette -->
-                    <div id="paletteContainer" class="container">
-                    </div>
-                    
-                    <!-- buttons -->
-                    <div class="taskbarInputContainer">
-                        <span id="eraser" class="button">Eraser</span>
-                    </div>
-                    <div class="taskbarInputContainer">
-                        <span id="clear" class="button">Clear</span>
-                    </div>
-                </div>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pictionary</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body>
+    <div id="signinContainer" class="grey-fade hidden">
+        <form id="guestSignin" class="signin">
+            <h4>Guest Sign in</h4>
+            <div class="accountContainer">
+                <label for="guestUsername">Username</label>
+                <input id="guestUsername" type="text" placeholder="Bob Ross" maxlength="14" autofocus>
+                <button type="submit" id="submitGuest">Continue as guest</button>
             </div>
-            <div id="second-column">
-                <!-- word box -->
-                <div id="wordContainer" class="container"></div>
-                <!-- chat -->
-                <div id="chatContainer" class="container"></div>
+        </form>
+        <form id="accountSignin" class="signin">
+            <h4>Account Sign in</h4>
+            <div class="accountContainer">
+                <label for="accountUsername">Email</label>
+                <input id="accountUsername" type="text" placeholder="Bob Ross" maxlength="14">
+                <label for="accountPassword">Password</label>
+                <input id="accountPassword" type="password">
+                <button id="submitAccount" type="submit">Sign in</button>
+            </div>
+        </form>
+        </form>
+    </div>
+
+    <div id="gameContainer">
+        <div id="first-column">
+            <!-- canvas -->
+            <div id="canvasContainer">
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="taskbarContainer">
+                <!-- palette -->
+                <div id="paletteContainer" class="container">
+                </div>
+
+                <!-- buttons -->
+                <div class="taskbarInputContainer">
+                    <span id="eraser" class="button">Eraser</span>
+                </div>
+                <div class="taskbarInputContainer">
+                    <span id="clear" class="button">Clear</span>
+                </div>
             </div>
         </div>
+        <div id="second-column">
+            <!-- word box -->
+            <div id="wordContainer" class="container"></div>
+            <!-- chat -->
+            <div id="chatContainer" class="container"></div>
+        </div>
+    </div>
 
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script type="text/javascript" src="main.js"></script>
-    </body>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</body>
+
 </html>

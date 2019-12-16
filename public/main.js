@@ -1,10 +1,17 @@
-$(function () {
-  // Data structures ///////////
-  const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
+// Data structures ///////////
+const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
 
+//////////////////////////////
+// Globar variables
+var socket = io();
+var user;
+var users = [];
+
+$(function () {
   //////////////////////////////
   // Setup functions
   resizeCanvas();
+  initialPrompt();
 
   //////////////////////////////
   // Event listeners ///////////
@@ -81,10 +88,34 @@ $(function () {
   //////////////////////////////
 });
 
+// resize the canvas to match the current container size
 function resizeCanvas() {
   var canvas = document.getElementById("canvas");
   var parent = canvas.parentNode.getBoundingClientRect();
 
   canvas.width = parent.width;
   canvas.height = parent.height;
+}
+
+// ask the user to sign in as a guest or a full account
+function initialPrompt() {
+  $('.grey-fade').fadeIn(500);
+
+  // guest account logic
+  $("#guestSignin").submit(function () {
+    event.preventDefault();
+    user = $('#guestUsername').val().trim();
+
+    if (user == '')
+      return false;
+
+    socket.emit('connection');
+    $('.grey-fade').fadeOut(300);
+  });
+
+  // full account logic
+  $("#accountSignin").submit(function () {
+    event.preventDefault();
+    user = $('');
+  });
 }
