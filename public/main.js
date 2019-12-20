@@ -4,8 +4,10 @@ const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
 //////////////////////////////
 // Globar variables
 var socket = io();
-var user;
-var users = [];
+var user; // this user
+var users = []; // array of all users in the session
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
 
 $(function () {
   //////////////////////////////
@@ -14,17 +16,21 @@ $(function () {
   initialPrompt();
 
   //////////////////////////////
-  // Event listeners ///////////
+  // Socket.io listeners
+  socket.on('assign drawer', initDrawer);
+  socket.on('issue word', issueWord);
+  socket.on('assign guesser', initGuesser);
+
+  //////////////////////////////
+  // Event listeners 
   $(window).resize(function () {
     resizeCanvas();
   });
 
   //////////////////////////////
-  // Canvas functions //////////
+  // Canvas functions 
   var canvasActive = false; // painting or erasing
   var mode = BrushMode.PAINT;
-  var canvas = document.getElementById("canvas");
-  var context = canvas.getContext("2d");
   var container = $("#canvasContainer");
   var mouse = { x: 0, y: 0 };
 
@@ -81,7 +87,7 @@ $(function () {
   });
 
   $("#clear").click(function () {
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    clearCanvas();
     mode = BrushMode.PAINT;
     $("#eraser").removeClass("selected");
   });
@@ -97,6 +103,10 @@ function resizeCanvas() {
   canvas.height = parent.height;
 }
 
+function clearCanvas() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 // ask the user to sign in as a guest or a full account
 function initialPrompt() {
   $('.grey-fade').fadeIn(500);
@@ -104,18 +114,37 @@ function initialPrompt() {
   // guest account logic
   $("#guestSignin").submit(function () {
     event.preventDefault();
-    user = $('#guestUsername').val().trim();
+    username = $('#guestUsername').val().trim();
 
-    if (user == '')
+    if (username == '')
       return false;
 
-    socket.emit('connection');
+    socket.emit('guestConnection', username);
     $('.grey-fade').fadeOut(300);
+    $('#signinContainer').hide();
   });
 
   // full account logic
   $("#accountSignin").submit(function () {
     event.preventDefault();
-    user = $('');
+    // TODO: account authentication / signup
   });
 }
+
+//////////////////////////////
+// Socket.io functions
+var initDrawer = function () {
+  $('.targetWord').css("display", "block");
+  $('#targetWordCover').css("display", "none");
+};
+
+var issueWord = function (word) {
+  console.log("[socket.io] your target word is: " + word);
+  $('#targetWord').text(word);
+};
+
+var initGuesser = () => {
+  clearCanvas();
+  $('.targetWord').css("display", "none");
+  $('#targetWordCover').css("display", "block");
+};
