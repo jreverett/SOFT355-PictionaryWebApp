@@ -7,7 +7,7 @@ mongoose.set('useCreateIndex', true);
 
 require('dotenv').config();
 
-const timeUtils = require('./utils/index').Time;
+// const timeUtils = require('./utils/index').Time;
 
 // Server settings
 const app = express();
@@ -41,9 +41,12 @@ app.use(express.static('public'));
 
 // SOCKET.IO /////////////////////////////
 var clients = []; // an array of all the currently connected users
+var winners = [];
 
 const server = http.createServer(app); //server instance
 const io = socket_io.listen(server); // create socket
+
+var targetWord; // word to be guessed
 
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
@@ -76,15 +79,51 @@ io.on('connection', socket => {
       socket.join('guesser');
 
       io.in(socket.id).emit('assign guesser', socket.id);
-      console.log('[socket.io] ' + socket.username + 'is a guesser');
+      console.log('[socket.io] ' + socket.username + ' is a guesser');
     }
   });
 
   socket.on('send message', (message, callback) => {
-    // may add timestamps back in later, removing to reduce chat box clutter
-    // message = "[" + timeUtils.getTimestamp() + "] " + socket.username + ': ' + message;
-    message = '[' + socket.username + '] ' + message;
-    io.sockets.emit('update messages', message);
+    var guess = message.toLowerCase();
+    targetWord = targetWord.toLowerCase();
+
+    if (guess === targetWord && !winners.includes(socket.id)) {
+      // guesser has correctly identified the drawing
+      winners.push(socket.id);
+
+      var pointsGiven;
+      switch (winners.length) {
+        case 1:
+          // 1st place
+          pointsGiven = 5;
+          break;
+        case 2:
+          // 2nd place
+          pointsGiven = 3;
+          break;
+        case 3:
+          // 3rd place
+          pointsGiven = 2;
+          break;
+        default:
+          // anything else
+          pointsGiven = 1;
+          break;
+      }
+
+      message =
+        '[server] ' +
+        socket.username +
+        ' correctly guessed the word! (+' +
+        pointsGiven +
+        ')';
+    } else {
+      // may add timestamps back in later, removing to reduce chat box clutter
+      // message = "[" + timeUtils.getTimestamp() + "] " + socket.username + ': ' + message;
+      message = '[' + socket.username + '] ' + message;
+    }
+
+    io.emit('update messages', message);
     callback();
   });
 
@@ -107,7 +146,8 @@ function emitRandomWord() {
     Word.findOne()
       .skip(random)
       .exec(function(err, word) {
-        io.to('drawer').emit('issue word', word.name);
+        targetWord = word.name;
+        io.to('drawer').emit('issue word', targetWord);
       });
   });
 }

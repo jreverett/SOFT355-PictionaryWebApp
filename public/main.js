@@ -21,6 +21,7 @@ $(function() {
   socket.on('issue word', issueWord);
   socket.on('assign guesser', initGuesser);
   socket.on('update messages', updateMessages);
+  socket.on('correct guess', correctGuess);
 
   //////////////////////////////
   // Event listeners
@@ -134,7 +135,8 @@ function initialPrompt() {
       .val()
       .trim();
 
-    if (username == '') return false;
+    if (username == '' || username == 'server' || username == 'Server')
+      return false;
 
     socket.emit('guest connection', username);
     $('.grey-fade').fadeOut(300);
@@ -153,6 +155,8 @@ function initialPrompt() {
 function initDrawer() {
   $('.targetWord').css('display', 'block');
   $('#targetWordCover').css('display', 'none');
+  $('#messageText')[0].disabled = true;
+  $('#messageSubmit')[0].disabled = true;
 }
 
 function issueWord(word) {
@@ -164,9 +168,13 @@ function initGuesser() {
   clearCanvas();
   $('.targetWord').css('display', 'none');
   $('#targetWordCover').css('display', 'block');
+  $('#messageText')[0].disabled = false;
+  $('#messageSubmit')[0].disabled = false;
 }
 
 function updateMessages(message) {
   var newMessage = $('<p class="chatMessage" />').text(message);
   $('#chatHistory').append(newMessage);
 }
+
+function correctGuess() {}
