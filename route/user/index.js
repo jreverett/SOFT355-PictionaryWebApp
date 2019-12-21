@@ -29,9 +29,11 @@ router.post('/login', (req, res) => {
 router.post('/signup', (req, res, next) => {
   let newUser = new User();
 
-  (newUser.name = req.body.name),
-    (newUser.email = req.body.email),
-    newUser.setPassword(req.body.password);
+  newUser.name = req.body.name;
+  newUser.email = req.body.email;
+  newUser.accountType = req.body.accountType;
+  newUser.points = 0;
+  newUser.setPassword(req.body.password);
 
   newUser.save((err, User) => {
     if (err) {
