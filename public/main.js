@@ -6,10 +6,10 @@ const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
 var socket = io();
 var user; // this user
 var users = []; // array of all users in the session
-var canvas = document.getElementById("canvas");
-var context = canvas.getContext("2d");
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
 
-$(function () {
+$(function() {
   //////////////////////////////
   // Setup functions
   resizeCanvas();
@@ -23,25 +23,25 @@ $(function () {
   socket.on('update messages', updateMessages);
 
   //////////////////////////////
-  // Event listeners 
-  $(window).resize(function () {
+  // Event listeners
+  $(window).resize(function() {
     resizeCanvas();
   });
 
   //////////////////////////////
-  // Canvas functions 
+  // Canvas functions
   var canvasActive = false; // painting or erasing
   var mode = BrushMode.PAINT;
-  var container = $("#canvasContainer");
+  var container = $('#canvasContainer');
   var mouse = { x: 0, y: 0 };
 
   // default line styling
   context.lineWidth = 3;
-  context.strokeStyle = "#000000";
-  context.lineCap = "round";
-  context.lineJoin = "round";
+  context.strokeStyle = '#000000';
+  context.lineCap = 'round';
+  context.lineJoin = 'round';
 
-  container.mousedown(function (e) {
+  container.mousedown(function(e) {
     canvasActive = true;
 
     // get mouse pos
@@ -52,7 +52,7 @@ $(function () {
     context.moveTo(mouse.x, mouse.y);
   });
 
-  container.mousemove(function (e) {
+  container.mousemove(function(e) {
     // get mouse pos
     mouse.x = e.pageX - this.offsetLeft;
     mouse.y = e.pageY - this.offsetTop;
@@ -60,65 +60,59 @@ $(function () {
     if (canvasActive == true) {
       if (mode == BrushMode.PAINT)
         // TODO: get line colour
-        context.strokeStyle = "red";
+        context.strokeStyle = 'red';
       else if (mode == BrushMode.ERASE)
         // white (to erase)
-        context.strokeStyle = "white";
+        context.strokeStyle = 'white';
 
       context.lineTo(mouse.x, mouse.y);
       context.stroke();
     }
   });
 
-  container.mouseup(function () {
+  container.mouseup(function() {
     canvasActive = false;
   });
 
-  container.mouseleave(function () {
+  container.mouseleave(function() {
     canvasActive = false;
   });
 
-  $("#eraser").click(function () {
-    $(this).toggleClass("selected");
+  $('#eraser').click(function() {
+    $(this).toggleClass('selected');
 
-    if (mode == BrushMode.PAINT)
-      mode = BrushMode.ERASE;
-    else
-      mode = BrushMode.PAINT;
+    if (mode == BrushMode.PAINT) mode = BrushMode.ERASE;
+    else mode = BrushMode.PAINT;
   });
 
-  $("#clear").click(function () {
+  $('#clear').click(function() {
     clearCanvas();
     mode = BrushMode.PAINT;
-    $("#eraser").removeClass("selected");
+    $('#eraser').removeClass('selected');
   });
 
   //////////////////////////////
-  // Chat functions 
-  $("#chatInput").submit(function () {
+  // Chat functions
+  $('#chatInput').submit(function() {
     event.preventDefault();
-    var $message = $("#messageText");
+    var $message = $('#messageText');
 
-    if ($message.val() == "")
-      return;
+    if ($message.val() == '') return;
 
     // send the message, clear the text field and scroll down to the new message
-    socket.emit("send message", $message.val(),
-      function () {
-        $message.val("");
+    socket.emit('send message', $message.val(), function() {
+      $message.val('');
 
-        var chatDiv = $("#chatHistory");
-        var lastMessage = chatDiv.children().last();
-        chatDiv.scrollTop(
-          lastMessage.offset().top - chatDiv.offset().top
-        );
-      });
+      var chatDiv = $('#chatHistory');
+      var lastMessage = chatDiv.children().last();
+      chatDiv.scrollTop(lastMessage.offset().top - chatDiv.offset().top);
+    });
   });
 });
 
 // resize the canvas to match the current container size
 function resizeCanvas() {
-  var canvas = document.getElementById("canvas");
+  var canvas = document.getElementById('canvas');
   var parent = canvas.parentNode.getBoundingClientRect();
 
   canvas.width = parent.width;
@@ -134,12 +128,13 @@ function initialPrompt() {
   $('.grey-fade').fadeIn(500);
 
   // guest account logic
-  $("#guestSignin").submit(function () {
+  $('#guestSignin').submit(function() {
     event.preventDefault();
-    username = $('#guestUsername').val().trim();
+    username = $('#guestUsername')
+      .val()
+      .trim();
 
-    if (username == '')
-      return false;
+    if (username == '') return false;
 
     socket.emit('guest connection', username);
     $('.grey-fade').fadeOut(300);
@@ -147,7 +142,7 @@ function initialPrompt() {
   });
 
   // full account logic
-  $("#accountSignin").submit(function () {
+  $('#accountSignin').submit(function() {
     event.preventDefault();
     // TODO: account authentication / signup
   });
@@ -156,22 +151,22 @@ function initialPrompt() {
 //////////////////////////////
 // Socket.io functions
 function initDrawer() {
-  $('.targetWord').css("display", "block");
-  $('#targetWordCover').css("display", "none");
-};
+  $('.targetWord').css('display', 'block');
+  $('#targetWordCover').css('display', 'none');
+}
 
 function issueWord(word) {
-  console.log("[socket.io] your target word is: " + word);
+  console.log('[socket.io] your target word is: ' + word);
   $('#targetWord').text(word);
-};
+}
 
 function initGuesser() {
   clearCanvas();
-  $('.targetWord').css("display", "none");
-  $('#targetWordCover').css("display", "block");
-};
+  $('.targetWord').css('display', 'none');
+  $('#targetWordCover').css('display', 'block');
+}
 
 function updateMessages(message) {
   var newMessage = $('<p class="chatMessage" />').text(message);
   $('#chatHistory').append(newMessage);
-};
+}
