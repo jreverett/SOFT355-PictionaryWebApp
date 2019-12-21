@@ -32,6 +32,7 @@ body {
   box-sizing: border-box;
 }
 
+/* canvas */
 #canvasContainer {
   margin: 8px;
   height: 85%;
@@ -45,7 +46,7 @@ body {
   cursor: crosshair;
 }
 
-/* Taskbar (palette & buttons) */
+/* taskbar (palette & buttons) */
 #taskbarContainer {
   display: flex;
   height: 15%;
@@ -118,6 +119,7 @@ body {
   box-sizing: border-box;
 }
 
+/* target word */
 #wordContainer {
   width: 100%;
   height: 10%;
@@ -150,10 +152,34 @@ body {
   border-radius: 10px;
 }
 
+/* chat */
 #chatContainer {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 90%;
 }
+
+#playerList {
+  flex-basis: 15%;
+  border-bottom: 1px solid rgba(0,0,0,0.4);
+  border-radius: 8px;
+}
+
+#chatHistory {
+  flex-basis: 80%;
+  text-align: left;
+  overflow: scroll;
+}
+
+#chatInput {
+  flex-basis: 5%;
+}
+
+.chatMessage {
+  margin: 0;
+}
+
 /******************/
 
 /* INITIAL PROMPT */

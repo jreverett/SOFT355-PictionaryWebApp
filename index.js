@@ -1,3 +1,4 @@
+// Dependencies ////////////////////////////////
 const http = require('http');
 const express = require("express");
 const socket_io = require('socket.io');
@@ -6,7 +7,9 @@ mongoose.set("useCreateIndex", true);
 
 require("dotenv").config();
 
-// server settings
+const timeUtils = require('./utils/index').Time;
+
+// Server settings
 const app = express();
 const port = process.env.PORT;
 app.use(express.json());
@@ -29,7 +32,6 @@ db.once("open", function () {
 
 // REST api routing ////////////////////////////////////
 const user = require("./route/user/index");
-
 app.use("/api/user", user);
 
 // homepage
@@ -40,13 +42,13 @@ app.use(express.static("public"));
 // SOCKET.IO /////////////////////////////
 var clients = []; // an array of all the currently connected users
 
-// create server instance
-const server = http.createServer(app);
-// create socket
-const io = socket_io.listen(server);
+const server = http.createServer(app); //server instance
+const io = socket_io.listen(server); // create socket
 
 io.on('connection', socket => {
-  socket.on('guestConnection', (username) => {
+  console.log('[socket.io] connection established with ' + socket.id);
+
+  socket.on('guest connection', (username) => {
     socket.username = username;
 
     // add the client to the array of connected clients
@@ -54,7 +56,7 @@ io.on('connection', socket => {
     clients.push(clientObj);
     console.log('[socket.io] guest \'' + socket.username + '\' joined (ID: ' + socket.id + ')');
 
-    // if this is the first 
+    // if this is the first player to connect, they are the drawer
     if (clients.length === 1) {
       socket.join('drawer');
       io.to('drawer').emit('assign drawer');
@@ -73,11 +75,19 @@ io.on('connection', socket => {
     }
   });
 
+  socket.on('send message', (message, callback) => {
+    // may add timestamps back in later, removing to reduce chat box clutter
+    // message = "[" + timeUtils.getTimestamp() + "] " + socket.username + ': ' + message;
+    message = "[" + socket.username + "] " + message;
+    io.sockets.emit("update messages", message);
+    callback();
+  });
+
   socket.on('disconnect', () => {
     // remove the connection from the clients array
     var index = clients.findIndex(x => x.id === socket.id);
     clients.splice(index, 1);
-    console.log('[socket.io] connection terminated with ' + socket.username);
+    console.log('[socket.io] connection terminated with ' + socket.id);
   });
 });
 
