@@ -47,6 +47,7 @@ const server = http.createServer(app); //server instance
 const io = socket_io.listen(server); // create socket
 
 var targetWord; // word to be guessed
+var currDrawer; // the current drawer socket
 
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
@@ -67,6 +68,7 @@ io.on('connection', socket => {
 
     // if this is the first player to connect, they are the drawer
     if (clients.length === 1) {
+      currDrawer = socket;
       socket.join('drawer');
       io.to('drawer').emit('assign drawer');
 
@@ -87,7 +89,11 @@ io.on('connection', socket => {
     var guess = message.toLowerCase();
     targetWord = targetWord.toLowerCase();
 
-    if (guess === targetWord && !winners.includes(socket.id)) {
+    if (
+      guess === targetWord &&
+      !winners.includes(socket.id) &&
+      socket.id !== currDrawer.id
+    ) {
       // guesser has correctly identified the drawing
       winners.push(socket.id);
 
