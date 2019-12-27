@@ -9,6 +9,17 @@ var users = []; // array of all users in the session
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 
+var brush = {
+  active: false,
+  moving: false,
+  mode: BrushMode.PAINT,
+  pos: { x: 0, y: 0 },
+  prevPos: false
+  // TODO: pass colour, thickness etc. here
+};
+
+var roundHasFinished;
+
 $(function() {
   //////////////////////////////
   // Setup functions
@@ -21,7 +32,9 @@ $(function() {
   socket.on('issue word', issueWord);
   socket.on('assign guesser', initGuesser);
   socket.on('update messages', updateMessages);
+  socket.on('clear canvas', clearCanvas);
   socket.on('correct guess', correctGuess);
+  socket.on('draw line', drawLine);
 
   //////////////////////////////
   // Event listeners
@@ -31,10 +44,10 @@ $(function() {
 
   //////////////////////////////
   // Canvas functions
-  var canvasActive = false; // painting or erasing
-  var mode = BrushMode.PAINT;
+  brush.active = false;
+  brush.mode = BrushMode.PAINT; // painting or erasing
+  brush.pos = { x: 0, y: 0 };
   var container = $('#canvasContainer');
-  var mouse = { x: 0, y: 0 };
 
   // default line styling
   context.lineWidth = 3;
@@ -43,52 +56,67 @@ $(function() {
   context.lineJoin = 'round';
 
   container.mousedown(function(e) {
-    canvasActive = true;
+    brush.active = true;
 
     // get mouse pos
-    mouse.x = e.pageX - this.offsetLeft;
-    mouse.y = e.pageY - this.offsetTop;
+    brush.pos.x = e.pageX - this.offsetLeft;
+    brush.pos.y = e.pageY - this.offsetTop;
 
     context.beginPath();
-    context.moveTo(mouse.x, mouse.y);
+    context.moveTo(brush.pos.x, brush.pos.y);
   });
 
-  container.mousemove(function(e) {
-    // get mouse pos
-    mouse.x = e.pageX - this.offsetLeft;
-    mouse.y = e.pageY - this.offsetTop;
+  var lastEmit = $.now();
 
-    if (canvasActive == true) {
-      if (mode == BrushMode.PAINT)
+  container.mousemove(function(e) {
+    // limit packet sending to every 25ms
+    if ($.now() - lastEmit < 25) return;
+
+    // get mouse pos
+    brush.pos.x = e.pageX - this.offsetLeft;
+    brush.pos.y = e.pageY - this.offsetTop;
+
+    brush.moving = true;
+
+    if (brush.active == true) {
+      if (brush.mode == BrushMode.PAINT)
         // TODO: get line colour
         context.strokeStyle = 'red';
-      else if (mode == BrushMode.ERASE)
+      else if (brush.mode == BrushMode.ERASE)
         // white (to erase)
         context.strokeStyle = 'white';
 
-      context.lineTo(mouse.x, mouse.y);
-      context.stroke();
+      if (brush.prevPos) {
+        socket.emit('draw line', { line: [brush.pos, brush.prevPos] });
+
+        context.lineTo(brush.pos.x, brush.pos.y);
+        context.stroke();
+      }
+
+      brush.prevPos = { x: brush.pos.x, y: brush.pos.y };
     }
   });
 
   container.mouseup(function() {
-    canvasActive = false;
+    brush.active = false;
+    brush.prevPos = false;
   });
 
   container.mouseleave(function() {
-    canvasActive = false;
+    brush.active = false;
   });
 
   $('#eraser').click(function() {
     $(this).toggleClass('selected');
 
-    if (mode == BrushMode.PAINT) mode = BrushMode.ERASE;
-    else mode = BrushMode.PAINT;
+    if (brush.mode == BrushMode.PAINT) brush.mode = BrushMode.ERASE;
+    else brush.mode = BrushMode.PAINT;
   });
 
   $('#clear').click(function() {
     clearCanvas();
-    mode = BrushMode.PAINT;
+    socket.emit('clear canvas');
+    brush.mode = BrushMode.PAINT;
     $('#eraser').removeClass('selected');
   });
 
@@ -165,7 +193,6 @@ function issueWord(word) {
 }
 
 function initGuesser() {
-  clearCanvas();
   $('.targetWord').css('display', 'none');
   $('#targetWordCover').css('display', 'block');
   $('#messageText')[0].disabled = false;
@@ -178,3 +205,10 @@ function updateMessages(message) {
 }
 
 function correctGuess() {}
+
+function drawLine(line) {
+  context.beginPath();
+  context.moveTo(line[0].x, line[0].y);
+  context.lineTo(line[1].x, line[1].y);
+  context.stroke();
+}

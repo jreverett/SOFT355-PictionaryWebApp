@@ -40,8 +40,9 @@ app.use(express.static('public'));
 ////////////////////////////////////////////////////////
 
 // SOCKET.IO /////////////////////////////
-var clients = []; // an array of all the currently connected users
-var winners = [];
+var clients = []; // all the currently connected users
+var winners = []; // guessers who have answered correctly
+var lineHistory = []; // all lines drawn this round
 
 const server = http.createServer(app); //server instance
 const io = socket_io.listen(server); // create socket
@@ -51,6 +52,11 @@ var currDrawer; // the current drawer socket
 
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
+
+  // update the connection with the current drawing
+  lineHistory.forEach(line => {
+    socket.emit('draw line', line);
+  });
 
   socket.on('guest connection', username => {
     socket.username = username;
@@ -78,7 +84,7 @@ io.on('connection', socket => {
       console.log('[socket.io] ' + socket.username + ' is the drawer');
     } else {
       // any other users will be added as guessers
-      socket.join('guesser');
+      socket.join('guessers');
 
       io.in(socket.id).emit('assign guesser', socket.id);
       console.log('[socket.io] ' + socket.username + ' is a guesser');
@@ -129,8 +135,27 @@ io.on('connection', socket => {
       message = '[' + socket.username + '] ' + message;
     }
 
+    // hide the word!
+    message = message.replace(targetWord, '*****');
+
     io.emit('update messages', message);
     callback();
+  });
+
+  socket.on('draw line', function(data) {
+    // add the incoming line to history and emit it
+    lineHistory.push(data.line);
+    io.to('guessers').emit('draw line', data.line);
+  });
+
+  socket.on('clear canvas', () => {
+    // only the drawer can issue this command
+    var drawer = Object.keys(io.sockets.adapter.rooms['drawer'].sockets);
+
+    if (drawer.includes(socket.id)) {
+      lineHistory = [];
+      io.emit('clear canvas');
+    }
   });
 
   socket.on('disconnect', () => {
