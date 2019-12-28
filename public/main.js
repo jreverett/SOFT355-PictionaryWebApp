@@ -136,6 +136,9 @@ $(function() {
   });
 
   $('#eraser').click(function() {
+    // only drawers can use this function
+    if (playerMode === PlayerMode.GUESSER) return;
+
     $(this).toggleClass('selected');
 
     // save the selected colour and restore it once the eraser is deselected
@@ -152,6 +155,9 @@ $(function() {
   });
 
   $('#clear').click(function() {
+    // only drawers can use this function
+    if (playerMode === PlayerMode.GUESSER) return;
+
     clearCanvas();
     socket.emit('clear canvas');
     brush.mode = BrushMode.PAINT;
