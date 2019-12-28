@@ -2,6 +2,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -175,7 +176,6 @@ body {
   margin: 8px;
   flex-basis: 80px;
   border-radius: 10px;
-  font-family: Arial, Helvetica, sans-serif;
   font-weight: 700;
 }
 
@@ -243,7 +243,6 @@ body {
 .targetWord {
   display: none;
   font-weight: bold;
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 #wordTitle {
@@ -265,6 +264,11 @@ body {
   height: 100%;
   background: black;
   border-radius: 10px;
+}
+
+#guesserText {
+  margin: 0;
+  color: white;
 }
 
 /* chat */
@@ -327,7 +331,6 @@ body {
   padding: 25px 5px;
   background-color: rgba(176, 237, 255, 0.9);
   text-align: center;
-  font-family: Arial, Helvetica, sans-serif;
   border-radius: 8px;
   padding: 10px;
 }
