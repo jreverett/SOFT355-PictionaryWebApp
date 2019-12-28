@@ -40,6 +40,24 @@
             <div id="taskbarContainer">
                 <!-- palette -->
                 <div id="paletteContainer" class="container">
+                    <div id="paletteRed" class="paletteColour"></div>
+                    <div id="paletteYellow" class="paletteColour"></div>
+                    <div id="paletteGreen" class="paletteColour"></div>
+                    <div id="paletteBlue" class="paletteColour"></div>
+                    <div id="palettePurple" class="paletteColour"></div>
+                    <div id="paletteBlack" class="paletteColour"></div>
+                    <div id="paletteCustomContainer">
+                        <div id="paletteCustomPlaceholder" class="paletteColour"></div>
+                        <input id="paletteCustom" class="jscolor {hash:true} paletteColour" onchange="updateJSColour(this.jscolor)" />
+                    </div>
+                    <div id="weightContainer">
+                        <div id="circleContainer">
+                            <div id="weightCircle"></div>
+                        </div>
+                        <div class="sliderContainer">
+                            <input id="weightSlider" class="slider" type="range" min="1" max="20" value="6">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- buttons -->
@@ -72,7 +90,8 @@
         </div>
 
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/vendors/jscolor.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="main.js"></script>
 </body>
 

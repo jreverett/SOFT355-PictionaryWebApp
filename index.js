@@ -1,6 +1,7 @@
 // Dependencies ////////////////////////////////
 const http = require('http');
 const express = require('express');
+const path = require('path');
 const socket_io = require('socket.io');
 const mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true);
@@ -34,8 +35,10 @@ db.once('open', function() {
 const user = require('./route/user/index');
 app.use('/api/user', user);
 
+app.use('/vendors', express.static('vendors'));
+
 // homepage
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 ////////////////////////////////////////////////////////
 
@@ -142,10 +145,10 @@ io.on('connection', socket => {
     callback();
   });
 
-  socket.on('draw line', function(data) {
+  socket.on('draw line', function(line) {
     // add the incoming line to history and emit it
-    lineHistory.push(data.line);
-    io.to('guessers').emit('draw line', data.line);
+    lineHistory.push(line);
+    io.to('guessers').emit('draw line', line);
   });
 
   socket.on('clear canvas', () => {

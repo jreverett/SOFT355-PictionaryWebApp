@@ -46,19 +46,134 @@ body {
   cursor: crosshair;
 }
 
-/* taskbar (palette & buttons) */
+/* palette */
 #taskbarContainer {
   display: flex;
   height: 15%;
 }
 
 #paletteContainer {
+  display: flex;
   flex-grow: 18;
 }
 
+/* palette colours & weight */
+.paletteColour {
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  margin: auto;
+  margin-right: 5px;
+  border: black solid 1px;
+}
+
+#paletteRed {
+  background: red;
+}
+
+#paletteYellow {
+  background: yellow;
+}
+
+#paletteGreen {
+  background: green;
+}
+
+#paletteBlue {
+  background: blue;
+}
+
+#palettePurple {
+  background: purple;
+}
+
+#paletteBlack {
+  background: black;
+}
+
+#paletteCustomContainer {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  margin: auto;
+  margin-right: 5px;
+}
+
+#paletteCustomPlaceholder,
+#paletteCustom {
+  position: absolute;
+  padding: 0;
+  left: 0;
+  text-align: center;
+}
+
+#paletteCustomPlaceholder {
+  background: url(images/colourwheel.png) no-repeat;
+  background-size: cover;
+  z-index: 1;
+}
+
+#weightContainer {
+  flex-grow: 1;
+}
+
+#circleContainer {
+  height: 25px;
+}
+
+#weightCircle {
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  background: black;
+  margin: auto;
+  margin-top: 10px;
+}
+
+.sliderContainer {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80%;
+  height: 12px;
+  margin-top: 15px;
+  border-radius: 5px;
+  background: lightgray;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: 0.2s;
+  transition: opacity 0.2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: greenyellow;
+  cursor: pointer;
+}
+
+.slider::-moz-slider-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: greenyellow;
+  cursor: pointer;
+}
+
+/* palette buttons */
 .taskbarInputContainer {
   margin: 8px;
-  flex-grow: 1;
+  flex-basis: 80px;
   border-radius: 10px;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 700;

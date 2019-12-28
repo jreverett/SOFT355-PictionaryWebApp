@@ -9,16 +9,17 @@ var users = []; // array of all users in the session
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 
+var prevColour;
+
 var brush = {
   active: false,
   moving: false,
   mode: BrushMode.PAINT,
   pos: { x: 0, y: 0 },
-  prevPos: false
-  // TODO: pass colour, thickness etc. here
+  prevPos: null,
+  lineWidth: 0,
+  strokeStyle: null
 };
-
-var roundHasFinished;
 
 $(function() {
   //////////////////////////////
@@ -42,6 +43,13 @@ $(function() {
     resizeCanvas();
   });
 
+  var slider = document.getElementById('weightSlider');
+  changeLineWidth(slider.value);
+
+  slider.oninput = function() {
+    changeLineWidth(this.value);
+  };
+
   //////////////////////////////
   // Canvas functions
   brush.active = false;
@@ -50,7 +58,6 @@ $(function() {
   var container = $('#canvasContainer');
 
   // default line styling
-  context.lineWidth = 3;
   context.strokeStyle = '#000000';
   context.lineCap = 'round';
   context.lineJoin = 'round';
@@ -79,15 +86,21 @@ $(function() {
     brush.moving = true;
 
     if (brush.active == true) {
-      if (brush.mode == BrushMode.PAINT)
-        // TODO: get line colour
-        context.strokeStyle = 'red';
-      else if (brush.mode == BrushMode.ERASE)
+      if (brush.mode == BrushMode.ERASE) {
         // white (to erase)
-        context.strokeStyle = 'white';
+        context.strokeStyle = '#FFFFFF';
+        brush.strokeStyle = '#FFFFFF';
+      }
 
       if (brush.prevPos) {
-        socket.emit('draw line', { line: [brush.pos, brush.prevPos] });
+        // bundle up the line data and send it off
+        var line = {
+          startPos: brush.prevPos,
+          endPos: brush.pos,
+          lineWidth: brush.lineWidth,
+          strokeStyle: brush.strokeStyle
+        };
+        socket.emit('draw line', line);
 
         context.lineTo(brush.pos.x, brush.pos.y);
         context.stroke();
@@ -98,6 +111,7 @@ $(function() {
   });
 
   container.mouseup(function() {
+    context.closePath();
     brush.active = false;
     brush.prevPos = false;
   });
@@ -106,11 +120,33 @@ $(function() {
     brush.active = false;
   });
 
+  //////////////////////////////
+  // Palette functions
+  $('.paletteColour').click(function() {
+    var colour = $(this).css('backgroundColor');
+    context.strokeStyle = colour;
+    brush.strokeStyle = colour;
+  });
+
+  $('#paletteCustomPlaceholder').click(function() {
+    $(this).hide();
+    $('#paletteCustom').click();
+  });
+
   $('#eraser').click(function() {
     $(this).toggleClass('selected');
 
-    if (brush.mode == BrushMode.PAINT) brush.mode = BrushMode.ERASE;
-    else brush.mode = BrushMode.PAINT;
+    // save the selected colour and restore it once the eraser is deselected
+    if (brush.mode == BrushMode.PAINT) {
+      brush.mode = BrushMode.ERASE;
+      prevColour = context.strokeStyle;
+      context.lineWidth = context.lineWidth + 5;
+    } else {
+      brush.mode = BrushMode.PAINT;
+      brush.strokeStyle = prevColour;
+      context.strokeStyle = prevColour;
+      context.lineWidth = context.lineWidth - 5;
+    }
   });
 
   $('#clear').click(function() {
@@ -178,6 +214,19 @@ function initialPrompt() {
   });
 }
 
+function changeLineWidth(value) {
+  // increase the value for css to make the change more obvious
+  $('#weightCircle').css('width', +value + 10);
+  $('#weightCircle').css('height', +value + 10);
+  context.lineWidth = value; // used locally
+  brush.lineWidth = value; // sent to server
+}
+
+function updateJSColour(jscolor) {
+  context.strokeStyle = '#' + jscolor;
+  brush.strokeStyle = '#' + jscolor;
+}
+
 //////////////////////////////
 // Socket.io functions
 function initDrawer() {
@@ -207,8 +256,11 @@ function updateMessages(message) {
 function correctGuess() {}
 
 function drawLine(line) {
+  context.lineWidth = line.lineWidth;
+  context.strokeStyle = line.strokeStyle;
+
   context.beginPath();
-  context.moveTo(line[0].x, line[0].y);
-  context.lineTo(line[1].x, line[1].y);
+  context.moveTo(line.startPos.x, line.startPos.y);
+  context.lineTo(line.endPos.x, line.endPos.y);
   context.stroke();
 }
