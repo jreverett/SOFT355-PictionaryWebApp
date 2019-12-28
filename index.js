@@ -98,6 +98,8 @@ io.on('connection', socket => {
     var guess = message.toLowerCase();
     targetWord = targetWord.toLowerCase();
 
+    var msgClass = 'chatMessage';
+
     if (
       guess === targetWord &&
       !winners.includes(socket.id) &&
@@ -126,6 +128,8 @@ io.on('connection', socket => {
           break;
       }
 
+      msgClass = msgClass + ' chatCorrect';
+
       message =
         '[server] ' +
         socket.username +
@@ -141,7 +145,9 @@ io.on('connection', socket => {
     // hide the word!
     message = message.replace(targetWord, '*****');
 
-    io.emit('update messages', message);
+    var element = "<p class='" + msgClass + "'>" + message + '</p>';
+
+    io.emit('update messages', element);
     callback();
   });
 

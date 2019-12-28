@@ -295,6 +295,11 @@ body {
   margin: 0;
 }
 
+.chatCorrect {
+  background: rgba(255, 255, 0, 0.38);
+  border-radius: 4px;
+}
+
 /******************/
 
 /* INITIAL PROMPT */

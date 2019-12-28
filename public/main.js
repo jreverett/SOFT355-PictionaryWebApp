@@ -34,7 +34,6 @@ $(function() {
   socket.on('assign guesser', initGuesser);
   socket.on('update messages', updateMessages);
   socket.on('clear canvas', clearCanvas);
-  socket.on('correct guess', correctGuess);
   socket.on('draw line', drawLine);
 
   //////////////////////////////
@@ -249,11 +248,8 @@ function initGuesser() {
 }
 
 function updateMessages(message) {
-  var newMessage = $('<p class="chatMessage" />').text(message);
-  $('#chatHistory').append(newMessage);
+  $('#chatHistory').append(message);
 }
-
-function correctGuess() {}
 
 function drawLine(line) {
   context.lineWidth = line.lineWidth;
