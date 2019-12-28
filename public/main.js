@@ -1,5 +1,6 @@
 // Data structures ///////////
 const BrushMode = Object.freeze({ PAINT: 1, ERASE: 2 });
+const PlayerMode = Object.freeze({ DRAWER: 1, GUESSER: 2 });
 
 //////////////////////////////
 // Globar variables
@@ -10,6 +11,8 @@ var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 
 var prevColour;
+
+var playerMode;
 
 var brush = {
   active: false,
@@ -84,8 +87,8 @@ $(function() {
 
     brush.moving = true;
 
-    if (brush.active == true) {
-      if (brush.mode == BrushMode.ERASE) {
+    if (brush.active === true && playerMode === PlayerMode.DRAWER) {
+      if (brush.mode === BrushMode.ERASE) {
         // white (to erase)
         context.strokeStyle = '#FFFFFF';
         brush.strokeStyle = '#FFFFFF';
@@ -229,6 +232,8 @@ function updateJSColour(jscolor) {
 //////////////////////////////
 // Socket.io functions
 function initDrawer() {
+  playerMode = PlayerMode.DRAWER;
+
   $('.targetWord').css('display', 'block');
   $('#targetWordCover').css('display', 'none');
   $('#messageText')[0].disabled = true;
@@ -241,6 +246,8 @@ function issueWord(word) {
 }
 
 function initGuesser() {
+  playerMode = PlayerMode.GUESSER;
+
   $('.targetWord').css('display', 'none');
   $('#targetWordCover').css('display', 'block');
   $('#messageText')[0].disabled = false;

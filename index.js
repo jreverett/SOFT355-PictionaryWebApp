@@ -152,6 +152,9 @@ io.on('connection', socket => {
   });
 
   socket.on('draw line', function(line) {
+    // only the drawer can issue this command
+    if (!socketIsDrawer(socket)) return;
+
     // add the incoming line to history and emit it
     lineHistory.push(line);
     io.to('guessers').emit('draw line', line);
@@ -159,9 +162,7 @@ io.on('connection', socket => {
 
   socket.on('clear canvas', () => {
     // only the drawer can issue this command
-    var drawer = Object.keys(io.sockets.adapter.rooms['drawer'].sockets);
-
-    if (drawer.includes(socket.id)) {
+    if (socketIsDrawer(socket)) {
       lineHistory = [];
       io.emit('clear canvas');
     }
@@ -190,6 +191,13 @@ function emitRandomWord() {
         io.to('drawer').emit('issue word', targetWord);
       });
   });
+}
+
+function socketIsDrawer(socket) {
+  var drawer = Object.keys(io.sockets.adapter.rooms['drawer'].sockets);
+
+  if (drawer.includes(socket.id)) return true;
+  else return false;
 }
 
 server.listen(port, () => {
