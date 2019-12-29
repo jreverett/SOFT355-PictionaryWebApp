@@ -108,7 +108,7 @@ io.on('connection', socket => {
       socket.id !== getDrawerSocket().id
     ) {
       // guesser has correctly identified the drawing
-      var winnerObj = { id: socket.id, name: socket.username };
+      var winnerObj = { id: socket.id, username: socket.username };
       winners.push(winnerObj);
 
       var pointsGiven;
@@ -201,7 +201,7 @@ function gameLoop() {
   console.log('starting round...');
 
   var end = new Date();
-  end.setSeconds(end.getSeconds() + 30);
+  end.setSeconds(end.getSeconds() + 60);
 
   // countdown timer for 1 minute
   var timer = setInterval(function() {
