@@ -101,7 +101,9 @@ $(function() {
           startPos: brush.prevPos,
           endPos: brush.pos,
           lineWidth: brush.lineWidth,
-          strokeStyle: brush.strokeStyle
+          strokeStyle: brush.strokeStyle,
+          originalCanvasX: window.innerWidth,
+          originalCanvasY: window.innerHeight
         };
         socket.emit('draw line', line);
 
@@ -274,9 +276,12 @@ function drawLine(line) {
   context.lineWidth = line.lineWidth;
   context.strokeStyle = line.strokeStyle;
 
+  let scaleX = canvas.width / line.originalCanvasX;
+  let scaleY = canvas.height / line.originalCanvasY;
+
   context.beginPath();
-  context.moveTo(line.startPos.x, line.startPos.y);
-  context.lineTo(line.endPos.x, line.endPos.y);
+  context.moveTo(line.startPos.x * scaleX, line.startPos.y * scaleY);
+  context.lineTo(line.endPos.x * scaleX, line.endPos.y * scaleY);
   context.stroke();
 }
 
