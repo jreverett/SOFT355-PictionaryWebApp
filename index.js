@@ -51,7 +51,6 @@ const server = http.createServer(app); //server instance
 const io = socket_io.listen(server); // create socket
 
 var targetWord; // word to be guessed
-var currDrawer; // the current drawer socket
 
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
@@ -64,8 +63,12 @@ io.on('connection', socket => {
   socket.on('guest connection', username => {
     socket.username = username;
 
+    var clientObj = { id: socket.id, username: socket.username };
+
+    // prevents duplicate connections
+    if (clients.some(e => e.id === socket.id)) return;
+
     // add the client to the array of connected clients
-    var clientObj = { id: socket.id, name: socket.username };
     clients.push(clientObj);
     console.log(
       "[socket.io] guest '" +
@@ -77,20 +80,19 @@ io.on('connection', socket => {
 
     // if this is the first player to connect, they are the drawer
     if (clients.length === 1) {
-      currDrawer = socket;
-      socket.join('drawer');
-      io.to('drawer').emit('assign drawer');
+      assignNewDrawer(socket);
 
       // send a random word to the drawer room
       emitRandomWord();
-
-      console.log('[socket.io] ' + socket.username + ' is the drawer');
     } else {
       // any other users will be added as guessers
       socket.join('guessers');
 
       io.in(socket.id).emit('assign guesser', socket.id);
-      console.log('[socket.io] ' + socket.username + ' is a guesser');
+      console.log('[socket.io] assigned guesser role to ' + socket.username);
+
+      // starts a game, ends the game, assigns a new drawer, repeats
+      gameLoop();
     }
   });
 
@@ -102,11 +104,12 @@ io.on('connection', socket => {
 
     if (
       guess === targetWord &&
-      !winners.includes(socket.id) &&
-      socket.id !== currDrawer.id
+      !winners.some(e => e.id === socket.id) &&
+      socket.id !== getDrawerSocket().id
     ) {
       // guesser has correctly identified the drawing
-      winners.push(socket.id);
+      var winnerObj = { id: socket.id, name: socket.username };
+      winners.push(winnerObj);
 
       var pointsGiven;
       switch (winners.length) {
@@ -163,8 +166,7 @@ io.on('connection', socket => {
   socket.on('clear canvas', () => {
     // only the drawer can issue this command
     if (socketIsDrawer(socket)) {
-      lineHistory = [];
-      io.emit('clear canvas');
+      resetCanvases();
     }
   });
 
@@ -188,17 +190,125 @@ function emitRandomWord() {
       .skip(random)
       .exec(function(err, word) {
         targetWord = word.name;
+
         io.to('drawer').emit('issue word', targetWord);
       });
   });
 }
 
-function socketIsDrawer(socket) {
-  var drawer = Object.keys(io.sockets.adapter.rooms['drawer'].sockets);
+function gameLoop() {
+  // starts a game then assigns a new drawer
+  console.log('starting round...');
 
-  if (drawer.includes(socket.id)) return true;
+  var end = new Date();
+  end.setSeconds(end.getSeconds() + 30);
+
+  // countdown timer for 1 minute
+  var timer = setInterval(function() {
+    var now = new Date().getTime();
+    var delta = end - now;
+    var seconds = Math.floor((delta % (1000 * 60)) / 1000);
+
+    io.emit('update timer', seconds);
+
+    if (seconds === 0) {
+      clearInterval(timer);
+
+      if (clients.length > 1) {
+        resetRound();
+      } else {
+        var waitForPlayers = setInterval(function() {
+          console.log('[socket.io] waiting for players');
+          if (clients.length > 1) {
+            clearInterval(waitForPlayers);
+
+            resetRound();
+          }
+        }, 1000);
+      }
+    }
+  }, 1000);
+}
+
+function assignNewDrawer(newDrawer) {
+  var previousDrawer = getDrawerSocket();
+
+  // if the previous drawer socket exists
+  if (previousDrawer) {
+    // move current drawer to the guessers room...
+    previousDrawer.leave('drawer');
+    io.sockets.connected[previousDrawer.id].join('guessers');
+
+    io.to(previousDrawer.id).emit('assign guesser');
+    console.log(
+      '[socket.io] assigned guesser role to ' + previousDrawer.username
+    );
+  }
+
+  // and the new drawer to the drawer room
+  io.sockets.connected[newDrawer.id].leave('guessers');
+  io.sockets.connected[newDrawer.id].join('drawer');
+
+  io.to(newDrawer.id).emit('assign drawer');
+  console.log('[socket.io] assigned drawer role to ' + newDrawer.username);
+
+  // notify users of the new drawer
+  var message = '[server] ' + newDrawer.username + ' is the drawer!';
+
+  var element = "<p class='chatMessage chatImportant'>" + message + '</p>';
+
+  io.emit('update messages', element);
+}
+
+function resetRound() {
+  // 1st place is the new drawer, if nobody got it, pick a random client
+  if (winners.length !== 0) {
+    assignNewDrawer(winners[0]);
+  } else if (clients.length !== 0) {
+    var rand = Math.floor(Math.random() * clients.length);
+    assignNewDrawer(clients[rand]);
+  } else {
+    console.log('[socket.io] insufficient players, ending game');
+    return;
+  }
+
+  // end of the round so clear the winners array
+  winners = [];
+
+  // also clear all canvases
+  resetCanvases();
+
+  emitRandomWord();
+
+  // start another round
+  gameLoop();
+}
+
+function resetCanvases() {
+  lineHistory = [];
+  io.emit('clear canvas');
+}
+
+// UTILITIES //////////////////////////////
+function getDrawerSocket() {
+  // returns the drawer socket, or false if there isnt one
+  var drawerRoom = io.sockets.adapter.rooms['drawer'];
+
+  // check the drawer room exists
+  if (drawerRoom === undefined || drawerRoom.length === 0) return false;
+  else {
+    var drawerID = Object.keys(drawerRoom.sockets);
+    return io.sockets.connected[drawerID];
+  }
+}
+
+function socketIsDrawer(socket) {
+  var drawer = getDrawerSocket();
+
+  if (drawer && drawer.id == socket.id) return true;
   else return false;
 }
+////////////////////////////////////////////
 
 server.listen(port, () => {
   console.log(`Pictionary app listening on port ${port}`);

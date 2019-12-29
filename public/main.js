@@ -38,6 +38,7 @@ $(function() {
   socket.on('update messages', updateMessages);
   socket.on('clear canvas', clearCanvas);
   socket.on('draw line', drawLine);
+  socket.on('update timer', updateTimer);
 
   //////////////////////////////
   // Event listeners
@@ -175,10 +176,7 @@ $(function() {
     // send the message, clear the text field and scroll down to the new message
     socket.emit('send message', $message.val(), function() {
       $message.val('');
-
-      var chatDiv = $('#chatHistory');
-      var lastMessage = chatDiv.children().last();
-      chatDiv.scrollTop(lastMessage.offset().top - chatDiv.offset().top);
+      scrollToNewMessage();
     });
   });
 });
@@ -203,6 +201,7 @@ function initialPrompt() {
   // guest account logic
   $('#guestSignin').submit(function() {
     event.preventDefault();
+
     username = $('#guestUsername')
       .val()
       .trim();
@@ -235,6 +234,12 @@ function updateJSColour(jscolor) {
   brush.strokeStyle = '#' + jscolor;
 }
 
+function scrollToNewMessage() {
+  var chatDiv = $('#chatHistory');
+  var lastMessage = chatDiv.children().last();
+  chatDiv.scrollTop(lastMessage.offset().top - chatDiv.offset().top);
+}
+
 //////////////////////////////
 // Socket.io functions
 function initDrawer() {
@@ -247,7 +252,7 @@ function initDrawer() {
 }
 
 function issueWord(word) {
-  console.log('[socket.io] your target word is: ' + word);
+  console.log('word is: ' + word);
   $('#targetWord').text(word);
 }
 
@@ -262,6 +267,7 @@ function initGuesser() {
 
 function updateMessages(message) {
   $('#chatHistory').append(message);
+  scrollToNewMessage();
 }
 
 function drawLine(line) {
@@ -272,4 +278,8 @@ function drawLine(line) {
   context.moveTo(line.startPos.x, line.startPos.y);
   context.lineTo(line.endPos.x, line.endPos.y);
   context.stroke();
+}
+
+function updateTimer(seconds) {
+  $('#timer').text(seconds);
 }
