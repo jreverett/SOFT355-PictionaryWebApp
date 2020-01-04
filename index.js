@@ -317,3 +317,5 @@ server.listen(port, () => {
     useUnifiedTopology: true
   });
 });
+
+module.exports = server;
