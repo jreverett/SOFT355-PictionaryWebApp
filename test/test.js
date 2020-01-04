@@ -125,6 +125,7 @@ describe('Status tests', function() {
 
 after(() => {
   server.close();
+  process.exit();
 });
 
 // Tests TODO:
