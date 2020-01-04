@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon index.js",
     "test-local": "mocha test",
-    "test": "mocha --timeout 10000 --reporter mocha-junit-reporter --reporter-options mochaFile=./test/TEST-RESULT.xml"
+    "test": "mocha --timeout 10000 --reporter mocha-junit-reporter --reporter-options mochaFile=./test/TEST-RESULT.xml --exit"
   },
   "repository": {
     "type": "git",
