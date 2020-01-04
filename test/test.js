@@ -1,9 +1,94 @@
-var server = require('../index');
-var io = require('socket.io-client');
-var request = require('request');
-var expect = require('chai').expect;
+const server = require('../index');
+const io = require('socket.io-client');
+const request = require('request');
+const jsdom = require('jsdom');
+const expect = require('chai').expect;
+const http = require('http');
 // var io_server = require('socket.io').listen(9000);
 //const mongoose = require('mongoose');
+
+describe('Status tests', function() {
+  it('should return status 200 for main.js', function(done) {
+    request('http://localhost:9000', function(err, res, body) {
+      expect(res.statusCode).to.equal(200);
+      done();
+    });
+  });
+});
+
+// describe('DOM tests', function() {
+//   it('should show the account prompt on inital connection', function(done) {
+//     request('http://localhost:9000', function(error, response, body) {
+//       const dom = new jsdom.JSDOM(body);
+//       // add test here...
+//       done();
+//     });
+//   });
+// });
+
+describe('Account tests', function() {
+  // dummy user data
+  var postData = {
+    name: 'test',
+    email: 'testemail@email.com',
+    accountType: 1,
+    password: 'PleaseHashMe'
+  };
+
+  it('should create a user account', function(done) {
+    var url = 'http://localhost:9000/api/user/signup';
+    var options = {
+      method: 'post',
+      body: postData,
+      json: true,
+      url: url
+    };
+
+    request(options, function(err, res, body) {
+      if (err) done(new Error(err));
+
+      console.log(body);
+      expect(res.statusCode).to.equal(201); // HTTP: CREATED
+      done();
+    });
+  });
+
+  it('should login to a user account', function(done) {
+    var url = 'http://localhost:9000/api/user/login';
+    var options = {
+      method: 'post',
+      body: postData,
+      json: true,
+      url: url
+    };
+
+    request(options, function(err, res, body) {
+      if (err) done(new Error(err));
+
+      console.log(body);
+      expect(res.statusCode).to.equal(200); // HTTP: SUCCESS
+      done();
+    });
+  });
+
+  it('should delete a user account', function(done) {
+    var url = 'http://localhost:9000/api/user/delete';
+    var options = {
+      method: 'post',
+      body: postData,
+      json: true,
+      url: url
+    };
+
+    request(options, function(err, res, body) {
+      if (err) done(new Error(err));
+
+      console.log(body);
+      expect(res.statusCode).to.equal(204); // HTTP: DELETED
+      done();
+    });
+  });
+});
 
 describe('Websocket tests', function() {
   // initSocket returns a promise
@@ -111,15 +196,6 @@ describe('Websocket tests', function() {
 
     // check the response data
     expect(assignedRole).to.equal('guesser');
-  });
-});
-
-describe('Status tests', function() {
-  it('Test', function(done) {
-    request('http://localhost:9000', function(error, response, body) {
-      expect(response.statusCode).to.equal(200);
-      done();
-    });
   });
 });
 
