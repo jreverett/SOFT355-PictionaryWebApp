@@ -172,6 +172,14 @@ $(function() {
     var $message = $('#messageText');
 
     if ($message.val() == '') return;
+    else if ($message.val() == '!score') {
+      socket.emit('request score', function() {
+        $message.val('');
+        scrollToNewMessage();
+      });
+
+      return;
+    }
 
     // send the message, clear the text field and scroll down to the new message
     socket.emit('send message', $message.val(), function() {

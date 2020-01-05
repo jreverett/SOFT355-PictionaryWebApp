@@ -192,6 +192,13 @@ io.on('connection', socket => {
     }
   });
 
+  socket.on('request score', callback => {
+    // send the player's score back in chat
+    var message = 'Your score is: ' + socket.score;
+
+    sendServerMessage(message, socket, 'chatImportant', callback);
+  });
+
   socket.on('disconnect', () => {
     // remove the connection from the clients array
     var index = clients.findIndex(x => x.id === socket.id);
