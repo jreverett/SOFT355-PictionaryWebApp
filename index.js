@@ -51,6 +51,8 @@ const server = http.createServer(app); //server instance
 const io = socket_io.listen(server); // create socket
 
 var targetWord; // word to be guessed
+var roundInProgress; // returns true if a round is in progress
+var forceRoundEnd = false; // forces the current round to terminate
 
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
@@ -60,10 +62,15 @@ io.on('connection', socket => {
     socket.emit('draw line', line);
   });
 
+  message =
+    '[server] Hi there! To check your score, type !score in the chat box below';
+
+  sendServerMessage(message, socket, 'chatImportant');
+
   socket.on('guest connection', username => {
     socket.username = username;
 
-    var clientObj = { id: socket.id, username: socket.username };
+    var clientObj = { id: socket.id, username: socket.username, score: null };
 
     // prevents duplicate connections
     if (clients.some(e => e.id === socket.id)) return;
@@ -77,6 +84,9 @@ io.on('connection', socket => {
         socket.id +
         ')'
     );
+
+    // initialise the socket's score
+    socket.score = 0;
 
     // if this is the first player to connect, they are the drawer
     if (clients.length === 1) {
@@ -92,15 +102,14 @@ io.on('connection', socket => {
       console.log('[socket.io] assigned guesser role to ' + socket.username);
 
       // starts a game, ends the game, assigns a new drawer, repeats
-      gameLoop();
+      // check a game isn't already in progress
+      if (!roundInProgress) gameLoop();
     }
   });
 
   socket.on('send message', (message, callback) => {
     var guess = message.toLowerCase();
     targetWord = targetWord.toLowerCase();
-
-    var msgClass = 'chatMessage';
 
     if (
       guess === targetWord &&
@@ -131,14 +140,30 @@ io.on('connection', socket => {
           break;
       }
 
-      msgClass = msgClass + ' chatCorrect';
-
       message =
         '[server] ' +
         socket.username +
         ' correctly guessed the word! (+' +
         pointsGiven +
         ')';
+
+      sendServerMessage(message, null, 'chatCorrect', callback);
+
+      socket.score += pointsGiven;
+      console.log(
+        '[socket.io] gave ' +
+          pointsGiven +
+          ' points to ' +
+          socket.username +
+          ' (total points = ' +
+          socket.score +
+          ')'
+      );
+
+      // all the guessers have got the answer, end the round
+      if (winners.length === clients.length - 1) forceRoundEnd = true;
+
+      return;
     } else {
       // may add timestamps back in later, removing to reduce chat box clutter
       // message = "[" + timeUtils.getTimestamp() + "] " + socket.username + ': ' + message;
@@ -148,10 +173,7 @@ io.on('connection', socket => {
     // hide the word!
     message = message.replace(targetWord, '*****');
 
-    var element = "<p class='" + msgClass + "'>" + message + '</p>';
-
-    io.emit('update messages', element);
-    callback();
+    sendServerMessage(message, null, null, callback);
   });
 
   socket.on('draw line', function(line) {
@@ -199,6 +221,7 @@ function emitRandomWord() {
 function gameLoop() {
   // starts a game then assigns a new drawer
   console.log('starting round...');
+  roundInProgress = true;
 
   var end = new Date();
   end.setSeconds(end.getSeconds() + 60);
@@ -211,7 +234,7 @@ function gameLoop() {
 
     io.emit('update timer', seconds);
 
-    if (seconds === 0) {
+    if (seconds === 0 || forceRoundEnd) {
       clearInterval(timer);
 
       if (clients.length > 1) {
@@ -254,13 +277,28 @@ function assignNewDrawer(newDrawer) {
 
   // notify users of the new drawer
   var message = '[server] ' + newDrawer.username + ' is the drawer!';
+  sendServerMessage(message, null, 'chatImportant');
+}
 
-  var element = "<p class='chatMessage chatImportant'>" + message + '</p>';
+// sends a message from the server to the specified recipient,
+// if none is specified, the message is emitted to all sockets
+function sendServerMessage(message, recipient, withClass, withCallback) {
+  var element = "<p class='chatMessage " + withClass + "'>" + message + '</p>';
 
-  io.emit('update messages', element);
+  if (recipient == null) {
+    io.emit('update messages', element);
+  } else {
+    io.to(recipient.id).emit('update messages', element);
+  }
+
+  if (withCallback != null) withCallback();
 }
 
 function resetRound() {
+  // start a new round
+  roundInProgress = false;
+  forceRoundEnd = false;
+
   // 1st place is the new drawer, if nobody got it, pick a random client
   if (winners.length !== 0) {
     assignNewDrawer(winners[0]);
