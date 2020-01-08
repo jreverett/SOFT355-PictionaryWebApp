@@ -289,7 +289,7 @@ body {
   color: white;
 }
 
-/* chat */
+/* lobby info */
 #chatContainer {
   display: flex;
   flex-direction: column;
@@ -317,6 +317,9 @@ div#playerList > div:first-child {
   background: rgba(255, 0, 0, 0.6);
 }
 
+/******************/
+
+/* chat */
 #chatHistory {
   flex-basis: 80%;
   text-align: left;

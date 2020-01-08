@@ -132,9 +132,11 @@ $(function() {
     brush.strokeStyle = colour;
 
     // change out of eraser mode if it's active
-    $('#eraser').removeClass('selected');
-    brush.mode = BrushMode.PAINT;
-    context.lineWidth = context.lineWidth - 5;
+    if ($('#eraser').hasClass('selected')) {
+      $('#eraser').removeClass('selected');
+      brush.mode = BrushMode.PAINT;
+      context.lineWidth = context.lineWidth - 5;
+    }
   });
 
   $('#paletteCustomPlaceholder').click(function() {
