@@ -39,6 +39,7 @@ $(function() {
   socket.on('clear canvas', clearCanvas);
   socket.on('draw line', drawLine);
   socket.on('update timer', updateTimer);
+  socket.on('update player list', updatePlayerList);
 
   //////////////////////////////
   // Event listeners
@@ -295,4 +296,13 @@ function drawLine(line) {
 
 function updateTimer(seconds) {
   $('#timer').text(seconds);
+}
+
+function updatePlayerList(sortedClientElements) {
+  var $playerList = $('#playerList');
+  $playerList.empty();
+
+  sortedClientElements.forEach(element => {
+    $playerList.append(element);
+  });
 }

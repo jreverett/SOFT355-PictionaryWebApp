@@ -69,8 +69,13 @@ io.on('connection', socket => {
 
   socket.on('guest connection', username => {
     socket.username = username;
+    socket.score = 0;
 
-    var clientObj = { id: socket.id, username: socket.username, score: null };
+    var clientObj = {
+      id: socket.id,
+      username: socket.username,
+      score: socket.score
+    };
 
     // prevents duplicate connections
     if (clients.some(e => e.id === socket.id)) return;
@@ -85,8 +90,8 @@ io.on('connection', socket => {
         ')'
     );
 
-    // initialise the socket's score
-    socket.score = 0;
+    // send the client list to the connected socket
+    updatePlayerLists(clients);
 
     // if this is the first player to connect, they are the drawer
     if (clients.length === 1) {
@@ -98,7 +103,7 @@ io.on('connection', socket => {
       // any other users will be added as guessers
       socket.join('guessers');
 
-      io.in(socket.id).emit('assign guesser', socket.id);
+      io.to(socket.id).emit('assign guesser', socket.id);
       console.log('[socket.io] assigned guesser role to ' + socket.username);
 
       // starts a game, ends the game, assigns a new drawer, repeats
@@ -150,6 +155,12 @@ io.on('connection', socket => {
       sendServerMessage(message, null, 'chatCorrect', callback);
 
       socket.score += pointsGiven;
+
+      var clientIndex = clients.findIndex(c => c.id == socket.id);
+      clients[clientIndex].score = socket.score;
+
+      updatePlayerLists(clients);
+
       console.log(
         '[socket.io] gave ' +
           pointsGiven +
@@ -203,6 +214,8 @@ io.on('connection', socket => {
     // remove the connection from the clients array
     var index = clients.findIndex(x => x.id === socket.id);
     clients.splice(index, 1);
+
+    updatePlayerLists(clients);
     console.log('[socket.io] connection terminated with ' + socket.id);
   });
 });
@@ -334,6 +347,11 @@ function resetCanvases() {
   io.emit('clear canvas');
 }
 
+function updatePlayerLists(elementArray) {
+  var sortedClientElements = socketsToSortedElements(elementArray);
+  io.emit('update player list', sortedClientElements);
+}
+
 // UTILITIES //////////////////////////////
 function getDrawerSocket() {
   // returns the drawer socket, or false if there isnt one
@@ -352,6 +370,33 @@ function socketIsDrawer(socket) {
 
   if (drawer && drawer.id == socket.id) return true;
   else return false;
+}
+
+// sorts descending, called with clients.sort(*this function name*);
+function orderSocketsByScore(a, b) {
+  if (a.score > b.score) return -1;
+  if (a.score < b.score) return 1;
+  return 0;
+}
+
+// converts the sorted sockets into div elements
+function socketsToSortedElements(sockets) {
+  var sockets = clients.sort(orderSocketsByScore);
+  var sortedElements = [];
+
+  sockets.forEach(socket => {
+    sortedElements.push(
+      '<div id=' +
+        socket.id +
+        ' class="player">' +
+        socket.username +
+        ': ' +
+        socket.score +
+        '</div>'
+    );
+  });
+
+  return sortedElements;
 }
 ////////////////////////////////////////////
 

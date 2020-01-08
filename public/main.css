@@ -299,8 +299,22 @@ body {
 
 #playerList {
   flex-basis: 15%;
+  overflow-y: scroll;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   border-radius: 8px;
+}
+
+.player {
+  background: rgba(255, 158, 0, 0.6);
+  border-radius: 5px;
+}
+
+div#playerList > div:nth-of-type(odd) {
+  background: rgba(255, 255, 0, 0.6);
+}
+
+div#playerList > div:first-child {
+  background: rgba(255, 0, 0, 0.6);
 }
 
 #chatHistory {
