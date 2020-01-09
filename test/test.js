@@ -226,7 +226,3 @@ describe('Websocket tests', function() {
 after(() => {
   server.close();
 });
-
-// Tests TODO:
-// check only drawer can issue clear canvas and draw line
-// load test sending many messages, on each update messages add to array, check array length. timeout 5s(?)

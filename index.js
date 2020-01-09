@@ -57,17 +57,17 @@ var forceRoundEnd = false; // forces the current round to terminate
 io.on('connection', socket => {
   console.log('[socket.io] connection established with ' + socket.id);
 
-  // update the connection with the current drawing
-  lineHistory.forEach(line => {
-    socket.emit('draw line', line);
-  });
-
   message =
     '[server] Hi there! To check your score, type !score in the chat box below';
 
   sendServerMessage(message, socket, 'chatImportant');
 
   socket.on('guest connection', username => {
+    // update the connection with the current drawing
+    lineHistory.forEach(line => {
+      socket.emit('draw line', line);
+    });
+
     socket.username = username;
     socket.score = 0;
 
@@ -254,7 +254,7 @@ function gameLoop() {
   roundInProgress = true;
 
   var end = new Date();
-  end.setSeconds(end.getSeconds() + 20);
+  end.setSeconds(end.getSeconds() + 60);
 
   // countdown timer for 1 minute
   var timer = setInterval(function() {
