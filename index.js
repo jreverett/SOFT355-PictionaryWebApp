@@ -244,10 +244,9 @@ function gameLoop() {
   roundInProgress = true;
 
   var end = new Date();
-  end.setMinutes(end.getMinutes() + 1);
-  end.setSeconds(end.getSeconds() + 15);
+  end.setSeconds(end.getSeconds() + 60);
 
-  // countdown timer for 1 minute 15 seconds
+  // countdown timer for 1 minute
   var timer = setInterval(function() {
     var now = new Date().getTime();
     var delta = end - now;
