@@ -334,7 +334,7 @@ div#playerList > div:first-child {
   margin: 0;
 }
 
-.chatCorrect .chatImportant {
+.chatCorrect .chatImportant .chatGreen .chatPurple {
   border-radius: 4px;
 }
 
@@ -344,6 +344,14 @@ div#playerList > div:first-child {
 
 .chatImportant {
   background: rgba(255, 0, 0, 0.4);
+}
+
+.chatGreen {
+  background: rgba(0, 255, 0, 0.4);
+}
+
+.chatPurple {
+  background: rgba(148, 0, 211, 0.4);
 }
 
 /******************/

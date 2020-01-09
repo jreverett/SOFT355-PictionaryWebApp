@@ -99,6 +99,12 @@ io.on('connection', socket => {
 
       // send a random word to the drawer room
       emitRandomWord();
+
+      sendServerMessage(
+        '[server] Well, this is awkward. Waiting for at least one more player',
+        null,
+        'chatPurple'
+      );
     } else {
       // any other users will be added as guessers
       socket.join('guessers');
@@ -241,10 +247,14 @@ function emitRandomWord() {
 function gameLoop() {
   // starts a game then assigns a new drawer
   console.log('starting round...');
+
+  io.emit('clear chat');
+  sendServerMessage('[server] --- Starting New Round ---', null, 'chatPurple');
+
   roundInProgress = true;
 
   var end = new Date();
-  end.setSeconds(end.getSeconds() + 60);
+  end.setSeconds(end.getSeconds() + 20);
 
   // countdown timer for 1 minute
   var timer = setInterval(function() {
@@ -257,9 +267,36 @@ function gameLoop() {
     if (seconds === 0 || forceRoundEnd) {
       clearInterval(timer);
 
+      var message;
+      if (winners.length === clients.length - 1)
+        message =
+          '[server] Everyone guessed the word (' +
+          targetWord +
+          '). Nice drawing, ' +
+          getDrawerSocket().username +
+          '!';
+      else if (winners.length === 0)
+        message =
+          '[server] Nobody guessed it ;_; , the target word was: ' + targetWord;
+      else
+        message =
+          '[server] The target word was: ' +
+          targetWord +
+          ', ' +
+          winners.length +
+          '/' +
+          (clients.length - 1) +
+          ' guessed it!';
+
+      sendServerMessage(message, null, 'chatGreen');
+
       if (clients.length > 1) {
         resetRound();
       } else {
+        sendServerMessage(
+          '[server] Well, this is awkward. Waiting for at least one more player'
+        );
+
         var waitForPlayers = setInterval(function() {
           console.log('[socket.io] waiting for players');
           if (clients.length > 1) {

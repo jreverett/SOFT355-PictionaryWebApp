@@ -36,6 +36,7 @@ $(function() {
   socket.on('issue word', issueWord);
   socket.on('assign guesser', initGuesser);
   socket.on('update messages', updateMessages);
+  socket.on('clear chat', clearChat);
   socket.on('clear canvas', clearCanvas);
   socket.on('draw line', drawLine);
   socket.on('update timer', updateTimer);
@@ -204,6 +205,10 @@ function resizeCanvas() {
 
   canvas.width = parent.width;
   canvas.height = parent.height;
+}
+
+function clearChat() {
+  $('#chatHistory').empty();
 }
 
 function clearCanvas() {
