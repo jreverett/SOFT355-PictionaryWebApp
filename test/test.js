@@ -1,11 +1,8 @@
 const server = require('../index');
 const io = require('socket.io-client');
 const request = require('request');
-const jsdom = require('jsdom');
 const expect = require('chai').expect;
-const http = require('http');
-// var io_server = require('socket.io').listen(9000);
-//const mongoose = require('mongoose');
+const jsdom = require('jsdom');
 
 describe('Status tests', function() {
   it('should return status 200 for main.js', function(done) {
@@ -16,15 +13,46 @@ describe('Status tests', function() {
   });
 });
 
-// describe('DOM tests', function() {
-//   it('should show the account prompt on inital connection', function(done) {
-//     request('http://localhost:9000', function(error, response, body) {
-//       const dom = new jsdom.JSDOM(body);
-//       // add test here...
-//       done();
-//     });
-//   });
-// });
+describe('DOM tests', function() {
+  // setup jsdom
+  var jswindow;
+  request('http://localhost:9000', function(err, res, body) {
+    jswindow = new jsdom.JSDOM(body).window;
+  });
+
+  it('should show the account prompt on inital connection', function(done) {
+    var prompt = jswindow.document.getElementById('signinContainer');
+    var visibility = jswindow.getComputedStyle(prompt).visibility;
+    expect(visibility).to.equal('visible');
+    done();
+  });
+
+  it('should show the timer with 60 seconds remaining', function(done) {
+    var timerValue = jswindow.document.getElementById('timer').textContent;
+    expect(timerValue).to.equal('60');
+    done();
+  });
+
+  it('should show thickness slider set to 6', function(done) {
+    var thickness = jswindow.document.getElementById('weightSlider').value;
+    expect(thickness).to.equal('6');
+    done();
+  });
+
+  it('should show guesser text by default', function(done) {
+    var guesserElement = jswindow.document.getElementById('coverText')
+      .outerHTML;
+    expect(guesserElement).to.equal('<p id="coverText">You\'re a guesser!</p>');
+    done();
+  });
+
+  it('should show eraser unselected by default', function(done) {
+    var eraser = jswindow.document.getElementById('eraser');
+    var isSelected = eraser.classList.contains('selected');
+    expect(isSelected).to.equal(false);
+    done();
+  });
+});
 
 describe('Account tests', function() {
   // dummy user data
@@ -47,7 +75,6 @@ describe('Account tests', function() {
     request(options, function(err, res, body) {
       if (err) done(new Error(err));
 
-      console.log(body);
       expect(res.statusCode).to.equal(201); // HTTP: CREATED
       done();
     });
@@ -65,7 +92,6 @@ describe('Account tests', function() {
     request(options, function(err, res, body) {
       if (err) done(new Error(err));
 
-      console.log(body);
       expect(res.statusCode).to.equal(200); // HTTP: SUCCESS
       done();
     });
@@ -83,7 +109,6 @@ describe('Account tests', function() {
     request(options, function(err, res, body) {
       if (err) done(new Error(err));
 
-      console.log(body);
       expect(res.statusCode).to.equal(204); // HTTP: DELETED
       done();
     });
@@ -105,7 +130,6 @@ describe('Websocket tests', function() {
 
       // define event handler for sucessfull connection
       socket.on('connect', () => {
-        console.log('connected');
         resolve(socket);
       });
 
@@ -205,3 +229,4 @@ after(() => {
 
 // Tests TODO:
 // check only drawer can issue clear canvas and draw line
+// load test sending many messages, on each update messages add to array, check array length. timeout 5s(?)
