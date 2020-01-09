@@ -248,9 +248,6 @@ function gameLoop() {
   // starts a game then assigns a new drawer
   console.log('starting round...');
 
-  io.emit('clear chat');
-  sendServerMessage('[server] --- Starting New Round ---', null, 'chatPurple');
-
   roundInProgress = true;
 
   var end = new Date();
@@ -294,7 +291,9 @@ function gameLoop() {
         resetRound();
       } else {
         sendServerMessage(
-          '[server] Well, this is awkward. Waiting for at least one more player'
+          '[server] Well, this is awkward. Waiting for at least one more player',
+          null,
+          'chatPurple'
         );
 
         var waitForPlayers = setInterval(function() {
@@ -356,27 +355,33 @@ function resetRound() {
   roundInProgress = false;
   forceRoundEnd = false;
 
-  // 1st place is the new drawer, if nobody got it, pick a random client
-  if (winners.length !== 0) {
-    assignNewDrawer(winners[0]);
-  } else if (clients.length !== 0) {
-    var rand = Math.floor(Math.random() * clients.length);
-    assignNewDrawer(clients[rand]);
-  } else {
-    console.log('[socket.io] insufficient players, ending game');
-    return;
-  }
+  sendServerMessage('[server] --- Starting New Round ---', null, 'chatPurple');
 
-  // end of the round so clear the winners array
-  winners = [];
+  setTimeout(function() {
+    io.emit('clear chat');
 
-  // also clear all canvases
-  resetCanvases();
+    // 1st place is the new drawer, if nobody got it, pick a random client
+    if (winners.length !== 0) {
+      assignNewDrawer(winners[0]);
+    } else if (clients.length !== 0) {
+      var rand = Math.floor(Math.random() * clients.length);
+      assignNewDrawer(clients[rand]);
+    } else {
+      console.log('[socket.io] insufficient players, ending game');
+      return;
+    }
 
-  emitRandomWord();
+    // end of the round so clear the winners array
+    winners = [];
 
-  // start another round
-  gameLoop();
+    // also clear all canvases
+    resetCanvases();
+
+    emitRandomWord();
+
+    // start another round
+    gameLoop();
+  }, 5000);
 }
 
 function resetCanvases() {
